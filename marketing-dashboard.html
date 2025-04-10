@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Marketing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        /* Base font size increase */
+        html {
+            font-size: 18px; /* Aumentado de 16px para 18px */
+        }
+
+        body {
+            line-height: 1.6;
+        }
+
+        .card {
+            border-radius: 12px; /* Aumentado para melhor visual */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s;
+            padding: 1.5rem; /* Padding aumentado */
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Aumentado para acomodar fontes maiores */
+            gap: 25px; /* Aumentado o espaçamento */
+        }
+
+        .metric-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem; /* Aumentado padding */
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 2.5rem; /* Aumentado de 2rem */
+            font-weight: 700;
+            margin: 15px 0; /* Aumentado margem */
+        }
+
+        .metric-card .text-gray-500 {
+            font-size: 1.25rem; /* Aumentado tamanho do título do KPI */
+        }
+
+        .metric-card .text-gray-600 {
+            font-size: 1.1rem; /* Aumentado tamanho da descrição */
+        }
+
+        .positive {
+            color: #10B981;
+            font-weight: 600;
+        }
+
+        .negative {
+            color: #EF4444;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th, td {
+            padding: 16px 20px; /* Aumentado padding */
+            text-align: left;
+            border-bottom: 2px solid #E5E7EB;
+            font-size: 1.1rem; /* Aumentado tamanho da fonte */
+        }
+
+        th {
+            font-size: 1.2rem; /* Cabeçalho ainda maior */
+            font-weight: 600;
+            background-color: #F3F4F6;
+            position: sticky;
+            top: 0;
+        }
+
+        thead {
+            background-color: #F3F4F6;
+        }
+
+        tbody tr:hover {
+            background-color: #F9FAFB;
+        }
+
+        .status-chip {
+            border-radius: 9999px;
+            padding: 0.5rem 1rem; /* Aumentado padding */
+            font-size: 1rem; /* Aumentado tamanho da fonte */
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        .status-maintained {
+            background-color: #DBEAFE;
+            color: #2563EB;
+        }
+
+        .status-new {
+            background-color: #D1FAE5;
+            color: #059669;
+        }
+
+        .separator {
+            height: 2px;
+            background: #E5E7EB;
+            margin: 40px 0; /* Aumentado margem */
+        }
+
+        /* Classes necessárias para funcionamento das tabs */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            border-bottom: 3px solid #2563EB;
+            color: #2563EB;
+            font-weight: 600;
+        }
+
+        .subtab {
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-size: 1.1rem;
+        }
+
+        .subtab.active {
+            border-bottom: 3px solid #2563EB;
+            color: #2563EB;
+            font-weight: 600;
+        }
+
+        /* Classes necessárias para funcionamento das subtabs */
+        .subtab-content {
+            display: none;
+        }
+
+        .subtab-content.active {
+            display: block;
+        }
+
+        /* Ajustes nos títulos e textos */
+        h1 {
+            font-size: 2.5rem !important; /* Forçando tamanho maior */
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            font-size: 1.8rem !important;
+            line-height: 1.3;
+            margin-bottom: 1.5rem;
+        }
+
+        h3 {
+            font-size: 1.5rem !important;
+            line-height: 1.4;
+        }
+
+        /* Ajustes para o gráfico */
+        .chart-container {
+            position: relative;
+            height: 400px; /* Aumentado altura */
+            width: 100%;
+            margin: 2rem 0;
+        }
+
+        /* Ajustes para textos informativos */
+        .text-sm {
+            font-size: 1rem !important; /* Aumentado de 0.875rem */
+        }
+
+        .text-base {
+            font-size: 1.1rem !important;
+        }
+
+        .text-lg {
+            font-size: 1.25rem !important;
+        }
+
+        /* Ajustes para cards de iniciativas */
+        .border {
+            padding: 1.5rem;
+        }
+
+        .font-medium {
+            font-size: 1.1rem;
+        }
+
+        /* Melhorias de contraste */
+        .text-gray-500 {
+            color: #4B5563 !important; /* Cor mais escura para melhor contraste */
+        }
+
+        .text-gray-600 {
+            color: #374151 !important; /* Cor mais escura para melhor contraste */
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-4">
+                <img src="imagens/ASSINATURA HORIZONTAIS LIGHT_2 XP.png" alt="Alta Vista Logo" class="h-6 w-auto object-contain">
+                <h1 class="text-3xl font-bold text-gray-800">Evolução e Otimização do Marketing</h1>
+            </div>
+            <div class="text-sm text-gray-500">Atualizado em: Abril/2024</div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid-container mb-8">
+            <div class="card bg-white metric-card">
+                <div class="text-gray-500">Redução de Custos</div>
+                <div class="metric-value positive">25.5%</div>
+                <div class="text-gray-600">R$ 4.711/mês</div>
+            </div>
+            <div class="card bg-white metric-card">
+                <div class="text-gray-500">Headcount</div>
+                <div class="metric-value">2 → 2</div>
+                <div class="text-gray-600">Mantido com perfil otimizado</div>
+            </div>
+            <div class="card bg-white metric-card">
+                <div class="text-gray-500">Fornecedores Fixos</div>
+                <div class="metric-value negative">-50%</div>
+                <div class="text-gray-600">De 2 para 1</div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="flex border-b mb-6">
+            <div class="tab active" data-tab="custos">Custos</div>
+            <div class="tab" data-tab="estrutura">Estrutura</div>
+            <div class="tab" data-tab="entregas">Entregas</div>
+            <div class="tab" data-tab="iniciativas">Iniciativas</div>
+        </div>
+
+        <!-- Custos Tab -->
+        <div id="custos-tab" class="tab-content active">
+            <div class="card bg-white p-6 mb-8">
+                <h2 class="text-xl font-bold mb-6">Comparativo de Custos Mensais</h2>
+                <div class="chart-container mb-6">
+                    <canvas id="custos-chart"></canvas>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Dezembro/2023</th>
+                                <th>Abril/2024</th>
+                                <th>Economia</th>
+                                <th>Redução %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Equipe interna (Analista)</td>
+                                <td>R$ 7.000</td>
+                                <td>R$ 5.000</td>
+                                <td class="positive">R$ 2.000</td>
+                                <td>-28,6%</td>
+                            </tr>
+                            <tr>
+                                <td>Agência de design (Faster)</td>
+                                <td>R$ 8.500</td>
+                                <td>R$ 3.000*</td>
+                                <td class="positive">R$ 5.500</td>
+                                <td>-64,7%</td>
+                            </tr>
+                            <tr>
+                                <td>Assessoria de imprensa (Marcus)</td>
+                                <td>R$ 3.000</td>
+                                <td>R$ 0</td>
+                                <td class="positive">R$ 3.000</td>
+                                <td>-100%</td>
+                            </tr>
+                            <tr>
+                                <td>Produtora de vídeo (Moov.se)</td>
+                                <td>R$ 0</td>
+                                <td>R$ 5.789</td>
+                                <td class="negative">-R$ 5.789</td>
+                                <td>N/A (novo)</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" class="bg-gray-50 font-medium">Software</td>
+                            </tr>
+                            <tr>
+                                <td class="pl-8">Adobe (gráfico)</td>
+                                <td>R$ 275,00</td>
+                                <td>R$ 275,00</td>
+                                <td>R$ 0</td>
+                                <td>0%</td>
+                            </tr>
+                            <tr>
+                                <td class="pl-8">River side (Streaming Lives)</td>
+                                <td>R$ 281,00</td>
+                                <td>R$ 281,00</td>
+                                <td>R$ 0</td>
+                                <td>0%</td>
+                            </tr>
+                            <tr>
+                                <td class="pl-8">Mailchimp (Email mkt)</td>
+                                <td>R$ 2.512,00</td>
+                                <td>R$ 2.512,00</td>
+                                <td>R$ 0</td>
+                                <td>0%</td>
+                            </tr>
+                            <tr>
+                                <td class="pl-8">Slack (Gestão e comunicação)</td>
+                                <td>R$ 149,26</td>
+                                <td>R$ 149,26</td>
+                                <td>R$ 0</td>
+                                <td>0%</td>
+                            </tr>
+                            <tr>
+                                <td class="pl-8">Webflow (hospedagem)</td>
+                                <td>R$ 323,00</td>
+                                <td>R$ 323,00</td>
+                                <td>R$ 0</td>
+                                <td>0%</td>
+                            </tr>
+                            <tr>
+                                <td class="pl-8">Opus Clip (cortes inteligentes)</td>
+                                <td>R$ 0</td>
+                                <td>R$ 120,39</td>
+                                <td class="negative">-R$ 120,39</td>
+                                <td>N/A (novo)</td>
+                            </tr>
+                            <tr class="font-bold">
+                                <td>TOTAL MENSAL</td>
+                                <td>R$ 22.040,26</td>
+                                <td>R$ 17.449,65</td>
+                                <td class="positive">R$ 4.590,61</td>
+                                <td>-20,8%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-sm text-gray-500 mt-4">*Desconto especial por 3 meses (março, abril e maio) com redução de escopo (de 40 para 20 créditos)</p>
+            </div>
+        </div>
+
+        <!-- Estrutura Tab -->
+        <div id="estrutura-tab" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card bg-white p-6">
+                    <h2 class="text-xl font-bold mb-6">Estrutura Anterior (Dezembro/2023)</h2>
+                    <div class="mb-6">
+                        <h3 class="font-semibold mb-2">Equipe Interna:</h3>
+                        <div class="flex items-center mb-3">
+                            <div class="bg-blue-100 rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                                <span class="text-blue-600 font-bold">AM</span>
+                            </div>
+                            <div>
+                                <div class="font-medium">André Mertens</div>
+                                <div class="text-sm text-gray-500">Head de Marketing</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                                <span class="text-blue-600 font-bold">BF</span>
+                            </div>
+                            <div>
+                                <div class="font-medium">Beatriz Fernanda</div>
+                                <div class="text-sm text-gray-500">Analista Pleno de Marketing</div>
+                                <div class="text-sm text-gray-500">R$ 7.000/mês</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="font-semibold mb-2">Fornecedores Mensais:</h3>
+                        <div class="mb-3">
+                            <div class="font-medium">Faster (Agência de Design)</div>
+                            <div class="text-sm text-gray-500">• Contrato de 40 créditos</div>
+                            <div class="text-sm text-gray-500">• Valor original: R$ 10.500</div>
+                            <div class="text-sm text-gray-500">• Valor com desconto: R$ 8.500</div>
+                        </div>
+                        <div>
+                            <div class="font-medium">Marcus (Assessoria de Imprensa)</div>
+                            <div class="text-sm text-gray-500">• Valor: R$ 3.000/mês</div>
+                        </div>
+                    </div>
+                    <div class="font-bold text-lg mt-6">Custo total mensal: R$ 18.500</div>
+                </div>
+                
+                <div class="card bg-white p-6">
+                    <h2 class="text-xl font-bold mb-6">Estrutura Atual (Abril/2024)</h2>
+                    <div class="mb-6">
+                        <h3 class="font-semibold mb-2">Equipe Interna:</h3>
+                        <div class="flex items-center mb-3">
+                            <div class="bg-blue-100 rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                                <span class="text-blue-600 font-bold">AM</span>
+                            </div>
+                            <div>
+                                <div class="font-medium">André Mertens</div>
+                                <div class="text-sm text-gray-500">Head de Marketing</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="bg-green-100 rounded-full w-10 h-10 flex items-center justify-center mr-3">
+                                <span class="text-green-600 font-bold">JG</span>
+                            </div>
+                            <div>
+                                <div class="font-medium">Julia Guidotti</div>
+                                <div class="text-sm text-gray-500">Analista Júnior de Marketing</div>
+                                <div class="text-sm text-gray-500">R$ 5.000/mês</div>
+                                <div class="text-xs text-gray-400">• Primeiro emprego</div>
+                                <div class="text-xs text-gray-400">• 24 anos</div>
+                                <div class="text-xs text-gray-400">• Perfil mais estratégico</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="font-semibold mb-2">Fornecedores Fixos:</h3>
+                        <div class="mb-3">
+                            <div class="font-medium">Faster (Agência de Design)</div>
+                            <div class="text-sm text-gray-500">• Contrato reduzido para 20 créditos</div>
+                            <div class="text-sm text-gray-500">• Valor promocional: R$ 3.000/mês</div>
+                            <div class="text-sm text-gray-500">• Redução de 64,7% no valor mensal</div>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="font-semibold mb-2">Fornecedores Pontuais:</h3>
+                        <div>
+                            <div class="font-medium">Moov.se (Produtora de Vídeo)</div>
+                            <div class="text-sm text-gray-500">• Podcast/Videocast (Ponto de Vista)</div>
+                            <div class="text-sm text-gray-500">• Lives institucionais</div>
+                            <div class="text-sm text-gray-500">• Contrato de 3 meses para 12 episódios</div>
+                            <div class="text-sm text-gray-500">• Valor: R$ 5.789/mês</div>
+                        </div>
+                    </div>
+                    <div class="font-bold text-lg mt-6">Custo total mensal: R$ 13.789</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Entregas Tab -->
+        <div id="entregas-tab" class="tab-content">
+            <div class="grid grid-cols-1 gap-8 mb-8">
+                <div class="card bg-white p-6">
+                    <h2 class="text-xl font-bold mb-6">Comparativo de Entregas</h2>
+                    <div class="flex border-b mb-4">
+                        <div class="subtab active" data-subtab="all">Todas</div>
+                        <div class="subtab" data-subtab="base">Conteúdos Base</div>
+                        <div class="subtab" data-subtab="new">Novas Entregas</div>
+                    </div>
+                    
+                    <div id="all-subtab" class="subtab-content active">
+                        <div class="overflow-x-auto max-h-96">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr>
+                                        <th>Conteúdo</th>
+                                        <th>Frequência</th>
+                                        <th>Formato/Canal</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Conteúdos Base -->
+                                    <tr>
+                                        <td>Balanço mensal</td>
+                                        <td>Mensal</td>
+                                        <td>PDF (conteúdo rico)</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Carta Mensal</td>
+                                        <td>Mensal</td>
+                                        <td>PDF - Email/LinkedIn</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Carta em 60 segundos</td>
+                                        <td>Mensal</td>
+                                        <td>Video/Audio - Instagram & WhatsApp</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Abertura e Fechamento de Mercado</td>
+                                        <td>Diário</td>
+                                        <td>Post - Instagram & WhatsApp</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Conteúdos para Instagram</td>
+                                        <td>Diário</td>
+                                        <td>Posts, carrossel e reels - temas diversos</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Apresentações</td>
+                                        <td>Pontual</td>
+                                        <td>PDF - Trade Insights</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>One Pages</td>
+                                        <td>Pontual</td>
+                                        <td>PDF - Trade Insights</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Apoio áreas internas</td>
+                                        <td>Pontual</td>
+                                        <td>PPT/áreas internas</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Posts institucionais</td>
+                                        <td>Mensal</td>
+                                        <td>Post/Carrosel - Instagram</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Posts Produtos e serviços</td>
+                                        <td>Semanal</td>
+                                        <td>Post/Carrosel - Instagram</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Email Marketing</td>
+                                        <td>Pontual</td>
+                                        <td>Email</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Enxoval Institucional</td>
+                                        <td>Pontual</td>
+                                        <td>PDF - Trade Insights</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Calendário comercial</td>
+                                        <td>Pontual</td>
+                                        <td>Posts - Instagram & WhatsApp</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Patrocínio</td>
+                                        <td>Pontual</td>
+                                        <td>Negociação, apoio, materiais de divulgação</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Eventos comerciais</td>
+                                        <td>Pontual</td>
+                                        <td>Convites, Folhetos, PPTs</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>IPCA</td>
+                                        <td>Mensal</td>
+                                        <td>Instagram & WhatsApp</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>COPOM E FED</td>
+                                        <td>45 dias</td>
+                                        <td>Instagram & WhatsApp</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Landing Pages</td>
+                                        <td>Pontual</td>
+                                        <td>Email e ações</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Mediação das Lives FII's</td>
+                                        <td>Mensal</td>
+                                        <td>Youtube</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <!-- Novas Entregas -->
+                                    <tr>
+                                        <td>Live Institucional</td>
+                                        <td>Trimestral</td>
+                                        <td>Youtube/Spotify</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Podcast (Ponto de Vista)</td>
+                                        <td>Mensal</td>
+                                        <td>Youtube/Spotify/Instagram</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Monday Call</td>
+                                        <td>Semanal</td>
+                                        <td>Spotify</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pit Stop Econômico</td>
+                                        <td>Semanal/por pauta</td>
+                                        <td>Spotify</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>The Way</td>
+                                        <td>Pontual</td>
+                                        <td>Web app</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Abertura Voe Alto</td>
+                                        <td>Pontual</td>
+                                        <td>Vídeo</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Materiais ricos</td>
+                                        <td>Pontual</td>
+                                        <td>PDF</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Logo & enxoval Ponto de Vista</td>
+                                        <td>Pontual</td>
+                                        <td>Múltiplos formatos</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Vídeo Consórcio AV & Univalores</td>
+                                        <td>Pontual</td>
+                                        <td>Instagram/Plataforma treinamento</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div id="base-subtab" class="subtab-content">
+                        <div class="overflow-x-auto max-h-96">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr>
+                                        <th>Conteúdo</th>
+                                        <th>Frequência</th>
+                                        <th>Formato/Canal</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Balanço mensal</td>
+                                        <td>Mensal</td>
+                                        <td>PDF (conteúdo rico)</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Carta Mensal</td>
+                                        <td>Mensal</td>
+                                        <td>PDF - Email/LinkedIn</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Carta em 60 segundos</td>
+                                        <td>Mensal</td>
+                                        <td>Video/Audio - Instagram & WhatsApp</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Abertura e Fechamento de Mercado</td>
+                                        <td>Diário</td>
+                                        <td>Post - Instagram & WhatsApp</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Conteúdos para Instagram</td>
+                                        <td>Diário</td>
+                                        <td>Posts, carrossel e reels - temas diversos</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Apresentações</td>
+                                        <td>Pontual</td>
+                                        <td>PDF - Trade Insights</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>One Pages</td>
+                                        <td>Pontual</td>
+                                        <td>PDF - Trade Insights</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Apoio áreas internas</td>
+                                        <td>Pontual</td>
+                                        <td>PPT/áreas internas</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Posts institucionais</td>
+                                        <td>Mensal</td>
+                                        <td>Post/Carrosel - Instagram</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Posts Produtos e serviços</td>
+                                        <td>Semanal</td>
+                                        <td>Post/Carrosel - Instagram</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Email Marketing</td>
+                                        <td>Pontual</td>
+                                        <td>Email</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Enxoval Institucional</td>
+                                        <td>Pontual</td>
+                                        <td>PDF - Trade Insights</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Calendário comercial</td>
+                                        <td>Pontual</td>
+                                        <td>Posts - Instagram & WhatsApp</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Patrocínio</td>
+                                        <td>Pontual</td>
+                                        <td>Negociação, apoio, materiais de divulgação</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Eventos comerciais</td>
+                                        <td>Pontual</td>
+                                        <td>Convites, Folhetos, PPTs</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>IPCA</td>
+                                        <td>Mensal</td>
+                                        <td>Instagram & WhatsApp</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>COPOM E FED</td>
+                                        <td>45 dias</td>
+                                        <td>Instagram & WhatsApp</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Landing Pages</td>
+                                        <td>Pontual</td>
+                                        <td>Email e ações</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Mediação das Lives FII's</td>
+                                        <td>Mensal</td>
+                                        <td>Youtube</td>
+                                        <td><span class="status-chip status-maintained">Mantido</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div id="new-subtab" class="subtab-content">
+                        <div class="overflow-x-auto max-h-96">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr>
+                                        <th>Conteúdo</th>
+                                        <th>Frequência</th>
+                                        <th>Formato/Canal</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Live Institucional</td>
+                                        <td>Trimestral</td>
+                                        <td>Youtube/Spotify</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Podcast (Ponto de Vista)</td>
+                                        <td>Mensal</td>
+                                        <td>Youtube/Spotify/Instagram</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Monday Call</td>
+                                        <td>Semanal</td>
+                                        <td>Spotify</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pit Stop Econômico</td>
+                                        <td>Semanal/por pauta</td>
+                                        <td>Spotify</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>The Way</td>
+                                        <td>Pontual</td>
+                                        <td>Web app</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Abertura Voe Alto</td>
+                                        <td>Pontual</td>
+                                        <td>Vídeo</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Materiais ricos</td>
+                                        <td>Pontual</td>
+                                        <td>PDF</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Logo & enxoval Ponto de Vista</td>
+                                        <td>Pontual</td>
+                                        <td>Múltiplos formatos</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Vídeo Consórcio AV & Univalores</td>
+                                        <td>Pontual</td>
+                                        <td>Instagram/Plataforma treinamento</td>
+                                        <td><span class="status-chip status-new">Novo</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Destaque Internalização -->
+            <div class="card bg-white p-6 mb-8">
+                <h2 class="text-xl font-bold mb-4">Internalização de Competências</h2>
+                <div class="flex flex-col md:flex-row">
+                    <div class="md:w-1/2 mb-4 md:mb-0 md:pr-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-100 rounded-full p-2 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="font-semibold">Todos os textos para todos os canais</div>
+                        </div>
+                        <p class="text-gray-600 ml-11">Eliminação da necessidade de copywriter externo</p>
+                    </div>
+                    <div class="md:w-1/2">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-100 rounded-full p-2 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="font-semibold">Parte significativa das artes</div>
+                        </div>
+                        <p class="text-gray-600 ml-11">Redução da dependência da agência de design</p>
+                    </div>
+                </div>
+                <div class="mt-6 text-gray-700">
+                    Estas competências internas permitem maior agilidade e redução de custos sem comprometer a qualidade do conteúdo.
+                </div>
+            </div>
+        </div>
+
+        <!-- Iniciativas Tab -->
+        <div id="iniciativas-tab" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="card bg-white p-6">
+                    <h2 class="text-xl font-bold mb-6">Uso de IA e Automatização</h2>
+                    <div class="flex items-start mb-4">
+                        <div class="bg-blue-100 rounded-full p-2 mt-1 mr-3 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Exploração de ferramentas de IA</div>
+                            <p class="text-gray-600 mt-1">Uso de IA para produção de conteúdo e automatização de tarefas repetitivas</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start mb-4">
+                        <div class="bg-blue-100 rounded-full p-2 mt-1 mr-3 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Agentes de IA para automação</div>
+                            <p class="text-gray-600 mt-1">Desenvolvimento de agentes para automação de conteúdo e tarefas rotineiras</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 px-4 py-3 bg-blue-50 rounded-lg">
+                        <p class="text-blue-800 font-medium">"Agentes de AI fazendo pesquisa, criando a base de conteudos e o time executando a curadoria e estratégia da comunicacão."</p>
+                        <p class="text-gray-500 text-sm mt-1">- Visão de marketing moderno da equipe</p>
+                    </div>
+                </div>
+                
+                <div class="card bg-white p-6">
+                    <h2 class="text-xl font-bold mb-6">Desenvolvimento In-House</h2>
+                    <div class="flex items-start mb-4">
+                        <div class="bg-purple-100 rounded-full p-2 mt-1 mr-3 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Internalização do site institucional</div>
+                            <p class="text-gray-600 mt-1">Desenvolvimento do novo site pela equipe interna, eliminando custos de agência</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start mb-4">
+                        <div class="bg-purple-100 rounded-full p-2 mt-1 mr-3 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Capacitação da equipe em novas tecnologias</div>
+                            <p class="text-gray-600 mt-1">Desenvolvimento de competências técnicas na equipe interna</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start mb-4">
+                        <div class="bg-purple-100 rounded-full p-2 mt-1 mr-3 flex-shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-semibold">Redução da dependência de fornecedores</div>
+                            <p class="text-gray-600 mt-1">Desenvolvimento de competências internas para substituir serviços terceirizados</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 px-4 py-3 bg-purple-50 rounded-lg">
+                        <p class="text-purple-800 font-medium">"O site precisa ser atualizado ainda este ano. Demanda urgente! Fazer o maximo possivel in-house e reduzir o budget se fosse tercerizado."</p>
+                        <p class="text-gray-500 text-sm mt-1">- Estratégia de internalização de desenvolvimento</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card bg-white p-6 mt-8">
+                <h2 class="text-xl font-bold mb-6">Próximos Passos e Oportunidades</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-orange-100 rounded-full p-2 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                </svg>
+                            </div>
+                            <h3 class="font-bold text-lg">Internalização do Site</h3>
+                        </div>
+                        <p class="text-gray-600">Desenvolvimento do novo site institucional pela equipe interna, eliminando custos de agência externa.</p>
+                        <div class="mt-4">
+                            <div class="text-sm text-gray-500">Prazo estimado</div>
+                            <div class="font-medium">Q3 2024</div>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-blue-100 rounded-full p-2 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-bold text-lg">Fortalecimento do LinkedIn</h3>
+                        </div>
+                        <p class="text-gray-600">Estratégia específica para ampliação da presença e engajamento no LinkedIn com conteúdo proprietário.</p>
+                        <div class="mt-4">
+                            <div class="text-sm text-gray-500">Impacto esperado</div>
+                            <div class="font-medium">Aumento de posicionamento institucional</div>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-green-100 rounded-full p-2 mr-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                            </div>
+                            <h3 class="font-bold text-lg">Automação com IA</h3>
+                        </div>
+                        <p class="text-gray-600">Criação de agentes automatizados para calendário de conteúdo, pesquisa de mercado e produção básica.</p>
+                        <div class="mt-4">
+                            <div class="text-sm text-gray-500">Prazo estimado</div>
+                            <div class="font-medium">Q4 2024</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Inicialização dos gráficos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gráfico de Custos
+            const custosCtx = document.getElementById('custos-chart').getContext('2d');
+            const custosChart = new Chart(custosCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Analista', 'Agência de Design', 'Assessoria de Imprensa', 'Produtora de Vídeo', 'Software', 'Total'],
+                    datasets: [
+                        {
+                            label: 'Dezembro/2023',
+                            data: [7000, 8500, 3000, 0, 3540.26, 22040.26],
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Abril/2024',
+                            data: [5000, 3000, 0, 5789, 3660.65, 17449.65],
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Valor (R$)',
+                                font: {
+                                    size: 16,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Navegação de Tabs principais
+            document.querySelectorAll('[data-tab]').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabName = this.getAttribute('data-tab');
+                    document.querySelectorAll('[data-tab]').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                    document.getElementById(tabName + '-tab').classList.add('active');
+                });
+            });
+
+            // Navegação de Subtabs
+            document.querySelectorAll('.subtab').forEach(subtab => {
+                subtab.addEventListener('click', function() {
+                    const container = this.closest('.card');
+                    const subtabName = this.getAttribute('data-subtab');
+                    
+                    // Remove active class de todas as subtabs no mesmo container
+                    container.querySelectorAll('.subtab').forEach(st => {
+                        st.classList.remove('active');
+                    });
+                    
+                    // Adiciona active class na subtab clicada
+                    this.classList.add('active');
+                    
+                    // Esconde todos os conteúdos de subtab no mesmo container
+                    container.querySelectorAll('.subtab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    
+                    // Mostra o conteúdo da subtab selecionada
+                    const selectedContent = container.querySelector('#' + subtabName + '-subtab');
+                    if (selectedContent) {
+                        selectedContent.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
